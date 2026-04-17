@@ -1,4 +1,10 @@
+from pprint import pprint
+
 from dataset import randomuser_data
+
+
+def get_fullname(user: dict):
+    return f"{user['name']['first']} {user['name']['last']}"
 
 
 def get_full_names(data: dict) -> list[str]:
@@ -71,7 +77,18 @@ def sort_users_by_age(data: dict, descending: bool = False) -> list[dict]:
     Returns:
         list[dict]: List of users with name and age sorted accordingly.
     """
-    pass
+    sorted_users = sorted(
+        data["results"], key=lambda user: user["dob"]["age"], reverse=descending
+    )
+    result = map(
+        lambda user: {"fullname": get_fullname(user), "age": user["dob"]["age"]},
+        sorted_users,
+    )
+
+    return list(result)
+
+
+# pprint(sort_users_by_age(randomuser_data))
 
 
 def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
@@ -85,7 +102,14 @@ def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
     Returns:
         list[str]: List of matching usernames.
     """
-    pass
+    filtered_data = filter(
+        lambda user: user["login"]["username"].startswith(letter), data["results"]
+    )
+    result = map(lambda user: user["login"]["username"], filtered_data)
+    return list(result)
+
+
+# pprint(get_usernames_starting_with(randomuser_data, 'g'))
 
 
 def get_average_age(data: dict) -> float:
@@ -98,7 +122,13 @@ def get_average_age(data: dict) -> float:
     Returns:
         float: Average age.
     """
-    pass
+    total = sum(map(lambda user: user["dob"]["age"], data["results"]))
+    n = len(data["results"])
+
+    return total / n
+
+
+# print(get_average_age(randomuser_data))
 
 
 def group_users_by_nationality(data: dict) -> dict:
@@ -111,7 +141,16 @@ def group_users_by_nationality(data: dict) -> dict:
     Returns:
         dict: Dictionary with nationality as keys and count as values.
     """
-    pass
+    group = {}
+    for user in data["results"]:
+        group.setdefault(user["nat"], 0)
+
+        group[user["nat"]] += 1
+
+    return group
+
+
+# pprint(group_users_by_nationality(randomuser_data))
 
 
 def get_all_coordinates(data: dict) -> list[tuple[str, str]]:
@@ -151,7 +190,18 @@ def find_users_in_timezone(data: dict, offset: str) -> list[dict]:
     Returns:
         list[dict]: List of users with full name and city.
     """
-    pass
+    return list(
+        map(
+            lambda user: {"name": get_fullname(user), "city": user["location"]["city"]},
+            filter(
+                lambda user: user["location"]["timezone"]["offset"] == offset,
+                data["results"],
+            ),
+        )
+    )
+
+
+print(find_users_in_timezone(randomuser_data, "+5:30"))
 
 
 def get_registered_before_year(data: dict, year: int) -> list[dict]:
